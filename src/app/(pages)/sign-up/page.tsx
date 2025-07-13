@@ -34,6 +34,11 @@ function Signup() {
             return;
         }
 
+        if (!signUp) {
+            setError("Signup not ready. Please reload and try again.");
+            return;
+        }
+
         setIsLoading(true);
         try {
             await signUp.create({ emailAddress, password });
@@ -50,8 +55,13 @@ function Signup() {
     async function handleVerify(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setError("");
-        setIsLoading(true);
 
+        if (!signUp || !setActive) {
+            setError("Verification not ready. Please reload and try again.");
+            return;
+        }
+
+        setIsLoading(true);
         try {
             const completeSignup = await signUp.attemptEmailAddressVerification({ code });
 

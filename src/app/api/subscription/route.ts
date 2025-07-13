@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 
 // POST: Start/renew subscription
 export async function POST() {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -51,7 +51,7 @@ export async function POST() {
 
 // GET: Check subscription status
 export async function GET() {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -22,6 +22,11 @@ function SignIn() {
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
 
+        if (!signIn || !setActive) {
+            setError("Authentication not ready. Please try again.");
+            return;
+        }
+
         try {
             const result = await signIn.create({
                 identifier: emailAddress,
@@ -39,6 +44,7 @@ function SignIn() {
             setError(error.errors?.[0]?.message || "Something went wrong");
         }
     }
+
 
     return (
         <>

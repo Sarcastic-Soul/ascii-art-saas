@@ -4,6 +4,7 @@ import { db } from "@/db/drizzle";
 import { asciiArt } from "@/db/schema";
 import { and, eq, desc, like } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { sql } from "drizzle-orm";
 
 // Paginated fetch with optional search
 export const getAsciiArtHistory = async ({
@@ -34,7 +35,7 @@ export const getAsciiArtHistory = async ({
             .offset(offset),
 
         db
-            .select({ count: db.fn.count() })
+            .select({ count: sql<number>`count(*)` })
             .from(asciiArt)
             .where(whereClause),
     ]);
