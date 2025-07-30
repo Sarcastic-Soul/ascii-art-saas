@@ -116,7 +116,37 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    @apply bg-black;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-black text-foreground;
+    font-family: var(--font-geist-mono), 'Courier New', monospace;
+  }
+
+  /* Force consistent black background */
+  #__next,
+  main,
+  .next-root {
+    @apply bg-black min-h-screen;
+  }
+
+  /* Matrix theme enhancements */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-black;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-green-500/30 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-green-500/50;
   }
 }

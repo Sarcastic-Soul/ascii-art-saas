@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/drizzle";
 import { asciiArt } from "@/db/schema";
-import { and, eq, ilike } from "drizzle-orm";
+import { and, eq, ilike, desc } from "drizzle-orm";
 
 export async function GET(req: Request) {
     try {
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
             .select()
             .from(asciiArt)
             .where(whereClause)
-            .orderBy(asciiArt.createdAt);
+            .orderBy(desc(asciiArt.createdAt));
 
         return NextResponse.json({ arts });
     } catch (error) {

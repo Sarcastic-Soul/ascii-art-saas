@@ -1,6 +1,5 @@
 // app/api/register/route.ts
-import { auth } from "@clerk/nextjs/server";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db/drizzle";
 import { users } from "@/db/schema";
 
@@ -11,13 +10,14 @@ export async function POST(req: Request) {
 
     const { email } = await req.json();
 
-    const matchingUsers = await clerkClient.users.getUserList({ emailAddress: [email] });
+    const client = await clerkClient();
+    const matchingUsers = await client.users.getUserList({ emailAddress: [email] });
 
-    if (!matchingUsers.length) {
+    if (!matchingUsers.data.length) {
         return new Response("User not found in Clerk", { status: 404 });
     }
 
-    const userId = matchingUsers[0].id;
+    const userId = matchingUsers.data[0].id;
 
     console.log("DEV user registration:", { email, userId });
 

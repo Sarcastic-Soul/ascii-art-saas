@@ -1,0 +1,1 @@
+ALTER TABLE "ascii_art" ADD COLUMN "is_colored" boolean DEFAULT false NOT NULL;

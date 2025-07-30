@@ -1,0 +1,1 @@
+ALTER TABLE "ascii_art" DROP COLUMN "is_colored";
