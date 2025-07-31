@@ -3,5 +3,6 @@ export type AsciiArtType = {
     userId: string;
     imageName: string;
     asciiText: string;
+    isPublic: boolean;
     createdAt: Date;
 };  

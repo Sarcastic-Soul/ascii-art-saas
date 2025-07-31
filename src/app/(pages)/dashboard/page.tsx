@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, Search, LogOut, User, Sparkles, Grid3X3, Calendar } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trash2, Plus, Search, LogOut, User, Sparkles, Grid3X3, Calendar, Globe, Lock } from "lucide-react";
 import { deleteAsciiArt } from "@/actions/artAction";
+import { motion } from "framer-motion";
 
 function Dashboard() {
     const { user } = useUser();

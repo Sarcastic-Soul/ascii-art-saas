@@ -60,3 +60,10 @@ export const deleteAsciiArt = async (id: number) => {
     await db.delete(asciiArt).where(eq(asciiArt.id, id));
     revalidatePath("/dashboard");
 };
+
+export const toggleAsciiArtPublic = async (id: number, isPublic: boolean) => {
+    await db.update(asciiArt)
+        .set({ isPublic })
+        .where(eq(asciiArt.id, id));
+    revalidatePath("/dashboard");
+};

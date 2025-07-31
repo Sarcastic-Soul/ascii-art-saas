@@ -3,19 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Eye, Save, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 export default function NewAsciiArtPage() {
     const router = useRouter();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageName, setImageName] = useState("");
-    const [width, setWidth] = useState<number | undefined>(undefined);
-    const [height, setHeight] = useState<number | undefined>(undefined);
     const [chars, setChars] = useState("@%#*+=-:. ");
     const [loading, setLoading] = useState(false);
     const [previewAscii, setPreviewAscii] = useState<string>("");
     const [showPreview, setShowPreview] = useState(false);
-    const [maintainOriginalSize, setMaintainOriginalSize] = useState(true);
     const [originalDimensions, setOriginalDimensions] = useState<{ width: number, height: number } | null>(null);
+    const [sizeMultiplier, setSizeMultiplier] = useState(1.0);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -40,11 +43,10 @@ export default function NewAsciiArtPage() {
         const formData = new FormData();
         formData.append("file", imageFile);
         formData.append("imageName", imageName);
-        if (width !== undefined) formData.append("width", width.toString());
-        if (height !== undefined && height > 0) formData.append("height", height.toString());
         formData.append("chars", chars);
         formData.append("preview", "true");
-        formData.append("maintainOriginalSize", maintainOriginalSize.toString());
+        formData.append("maintainOriginalSize", "true");
+        formData.append("sizeMultiplier", sizeMultiplier.toString());
 
         setLoading(true);
 
@@ -75,10 +77,9 @@ export default function NewAsciiArtPage() {
         const formData = new FormData();
         formData.append("file", imageFile);
         formData.append("imageName", imageName);
-        if (width !== undefined) formData.append("width", width.toString());
-        if (height !== undefined && height > 0) formData.append("height", height.toString());
         formData.append("chars", chars);
-        formData.append("maintainOriginalSize", maintainOriginalSize.toString());
+        formData.append("maintainOriginalSize", "true");
+        formData.append("sizeMultiplier", sizeMultiplier.toString());
 
         setLoading(true);
 
@@ -147,62 +148,31 @@ export default function NewAsciiArtPage() {
                                     className="w-full px-4 py-3 mb-4 rounded-lg bg-black/50 border border-green-500/50 text-green-400 placeholder-green-700/50 focus:border-green-400 focus:outline-none transition-colors"
                                 />
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label className="block mb-2 text-sm text-green-400 font-medium">Width (chars)</label>
-                                        <input
-                                            type="number"
-                                            value={width || ""}
-                                            onChange={(e) => setWidth(e.target.value ? Number(e.target.value) : undefined)}
-                                            placeholder={maintainOriginalSize ? "Auto (original size)" : "100"}
-                                            className="w-full px-3 py-2 rounded-lg bg-black/50 border border-green-500/50 text-green-400 placeholder-green-700/50 focus:border-green-400 focus:outline-none transition-colors"
-                                            min={10}
-                                            max={500}
-                                            disabled={maintainOriginalSize}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block mb-2 text-sm text-green-400 font-medium">Height (chars)</label>
-                                        <input
-                                            type="number"
-                                            value={height || ""}
-                                            onChange={(e) => setHeight(e.target.value ? Number(e.target.value) : undefined)}
-                                            placeholder={maintainOriginalSize ? "Auto (original size)" : "Auto"}
-                                            className="w-full px-3 py-2 rounded-lg bg-black/50 border border-green-500/50 text-green-400 placeholder-green-700/50 focus:border-green-400 focus:outline-none transition-colors"
-                                            min={0}
-                                            max={500}
-                                            disabled={maintainOriginalSize}
-                                        />
-                                        <p className="text-xs text-green-500/60 mt-1">
-                                            {maintainOriginalSize ? "Calculated from original image" : "0 = auto calculate"}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Original Size Toggle */}
+                                {/* Size Multiplier - Always visible */}
                                 <div className="mb-4">
-                                    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-black/30 border border-green-500/30 hover:border-green-400/50 transition-colors">
-                                        <input
-                                            type="checkbox"
-                                            checked={maintainOriginalSize}
-                                            onChange={(e) => setMaintainOriginalSize(e.target.checked)}
-                                            className="w-4 h-4 text-green-600 bg-gray-800 border-green-500/50 rounded focus:ring-green-500 focus:ring-2"
-                                        />
-                                        <div className="flex-1">
-                                            <span className="text-sm text-green-400 font-medium">
-                                                Maintain original image proportions (Recommended)
-                                            </span>
-                                            {originalDimensions && (
-                                                <p className="text-xs text-green-500/60 mt-1">
-                                                    Original: {originalDimensions.width} × {originalDimensions.height} pixels
-                                                </p>
-                                            )}
-                                        </div>
+                                    <label className="block mb-2 text-sm text-green-400 font-medium">
+                                        Size Scale: {sizeMultiplier}x
                                     </label>
-                                    {!maintainOriginalSize && (
-                                        <p className="text-xs text-yellow-500/80 mt-2 ml-3">
-                                            ⚠️ Manual sizing may distort the image proportions
+                                    <input
+                                        type="range"
+                                        min="0.3"
+                                        max="2.5"
+                                        step="0.1"
+                                        value={sizeMultiplier}
+                                        onChange={(e) => setSizeMultiplier(parseFloat(e.target.value))}
+                                        className="w-full h-2 bg-black/50 rounded-lg appearance-none cursor-pointer slider-green"
+                                    />
+                                    <div className="flex justify-between text-xs text-green-500/60 mt-1">
+                                        <span>Small (0.3x)</span>
+                                        <span>Normal (1.0x)</span>
+                                        <span>Large (2.5x)</span>
+                                    </div>
+                                    <p className="text-xs text-green-500/80 mt-2">
+                                        📏 Adjust size while preserving image proportions
+                                    </p>
+                                    {originalDimensions && (
+                                        <p className="text-xs text-green-500/60 mt-1">
+                                            Original: {originalDimensions.width} × {originalDimensions.height} pixels
                                         </p>
                                     )}
                                 </div>
@@ -256,8 +226,8 @@ export default function NewAsciiArtPage() {
                             </p>
                         </div>
 
-                        <div className="bg-zinc-900/80 backdrop-blur-sm p-6 rounded-lg overflow-auto text-xs max-h-96 border border-green-500/50 w-full shadow-2xl shadow-green-500/10">
-                            <pre className="whitespace-pre-wrap text-green-400 leading-tight">{previewAscii}</pre>
+                        <div className="bg-zinc-900/80 backdrop-blur-sm p-6 rounded-lg overflow-x-auto overflow-y-auto text-xs max-h-96 border border-green-500/50 w-full shadow-2xl shadow-green-500/10">
+                            <pre className="whitespace-pre text-green-400 leading-tight">{previewAscii}</pre>
                         </div>
                     </div>
                 )}

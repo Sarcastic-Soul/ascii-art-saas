@@ -1,4 +1,6 @@
 // lib/client-utils.ts
+import { toast } from "sonner";
+
 export function downloadTextFile(content: string, filename: string): void {
     // Remove HTML tags for plain text download
     const plainText = content.replace(/<[^>]*>/g, '');
@@ -12,12 +14,19 @@ export function downloadTextFile(content: string, filename: string): void {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+
+    toast.success(`Downloaded ${filename}`);
 }
 
 export function copyToClipboard(content: string): Promise<void> {
     // Remove HTML tags for plain text copy
     const plainText = content.replace(/<[^>]*>/g, '');
-    return navigator.clipboard.writeText(plainText);
+    return navigator.clipboard.writeText(plainText).then(() => {
+        toast.success("Copied to clipboard!");
+    }).catch(() => {
+        toast.error("Failed to copy to clipboard");
+        throw new Error("Copy failed");
+    });
 }
 
 export function shareAsciiArt(content: string, title: string): void {

@@ -2,36 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { downloadTextFile, copyToClipboard } from "@/lib/client-utils";
-import { Copy, Download, Share2, Calendar, Loader2, AlertCircle, Globe, Lock } from "lucide-react";
+import { Calendar, Loader2, AlertCircle, Copy, Globe } from "lucide-react";
+import { copyToClipboard } from "@/lib/client-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 
-interface AsciiArt {
+interface PublicAsciiArt {
   id: number;
   imageName: string;
   asciiText: string;
-  isPublic: boolean;
   createdAt: string;
 }
 
-export default function AsciiArtPage() {
+export default function PublicAsciiArtPage() {
   const params = useParams();
-  const [art, setArt] = useState<AsciiArt | null>(null);
+  const [art, setArt] = useState<PublicAsciiArt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isTogglingPublic, setIsTogglingPublic] = useState(false);
 
   useEffect(() => {
     const fetchArt = async () => {
       try {
-        const response = await fetch(`/api/ascii-art/${params.id}`);
+        const response = await fetch(`/api/public/ascii-art/${params.id}`);
         if (!response.ok) {
-          throw new Error('ASCII art not found');
+          if (response.status === 404) {
+            throw new Error('ASCII art not found or not publicly shared');
+          }
+          throw new Error('Failed to load ASCII art');
         }
         const data = await response.json();
         setArt(data);
@@ -47,54 +46,17 @@ export default function AsciiArtPage() {
     }
   }, [params.id]);
 
-  const handleDownload = () => {
-    if (art) {
-      downloadTextFile(art.asciiText, `${art.imageName}_ascii.txt`);
-    }
-  };
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleCopy = async () => {
     if (art) {
       try {
         await copyToClipboard(art.asciiText);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
       } catch (error) {
         // Error already handled by copyToClipboard
       }
-    }
-  };
-
-  const handleTogglePublic = async (checked: boolean) => {
-    if (!art || isTogglingPublic) return;
-
-    setIsTogglingPublic(true);
-    try {
-      const response = await fetch(`/api/ascii-art/${art.id}/toggle-public`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublic: checked })
-      });
-
-      if (response.ok) {
-        setArt({ ...art, isPublic: checked });
-        toast.success(checked ? "ASCII art is now publicly shareable!" : "ASCII art is now private");
-      } else {
-        throw new Error('Failed to update');
-      }
-    } catch (error) {
-      toast.error("Failed to update sharing settings");
-    } finally {
-      setIsTogglingPublic(false);
-    }
-  };
-
-  const handleCopyPublicLink = async () => {
-    if (!art || !art.isPublic) return;
-
-    const publicUrl = `${window.location.origin}/public/${art.id}`;
-    try {
-      await copyToClipboard(publicUrl);
-    } catch (error) {
-      // Error already handled by copyToClipboard
     }
   };
 
@@ -154,7 +116,7 @@ export default function AsciiArtPage() {
                 {art.imageName}
               </motion.h1>
               <motion.div
-                className="flex items-center gap-2 text-green-500/80 mb-2"
+                className="flex items-center gap-2 text-green-500/80 mb-3"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
@@ -165,37 +127,20 @@ export default function AsciiArtPage() {
                 </span>
               </motion.div>
               <motion.div
-                className="flex items-center gap-4"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <Badge
-                  variant="secondary"
-                  className={art.isPublic
-                    ? "bg-green-900/50 text-green-400 border-green-500/50"
-                    : "bg-zinc-800/50 text-green-500/70 border-zinc-600/50"
-                  }
-                >
-                  {art.isPublic ? <Globe size={12} className="mr-1" /> : <Lock size={12} className="mr-1" />}
-                  {art.isPublic ? "Public" : "Private"}
+                <Badge variant="secondary" className="bg-green-900/50 text-green-400 border-green-500/50">
+                  <Globe size={12} className="mr-1" />
+                  Publicly Shared
                 </Badge>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-green-500/80 font-mono">Private</span>
-                  <Switch
-                    checked={art.isPublic}
-                    onCheckedChange={handleTogglePublic}
-                    disabled={isTogglingPublic}
-                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-zinc-600 border border-green-500/30"
-                  />
-                  <span className="text-sm text-green-500/80 font-mono">Public</span>
-                </div>
               </motion.div>
             </div>
 
+            {/* Copy button */}
             <motion.div
-              className="flex flex-wrap gap-3"
+              className="flex gap-3"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
@@ -207,37 +152,15 @@ export default function AsciiArtPage() {
                 size="sm"
               >
                 <Copy size={16} className="mr-2" />
-                Copy
+                {copySuccess ? "Copied!" : "Copy"}
               </Button>
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                className="border-green-500/50 text-green-400 hover:bg-green-900/20 hover:border-green-400 font-mono"
-                size="sm"
-              >
-                <Download size={16} className="mr-2" />
-                Download
-              </Button>
-
-              {/* Share button - only visible when public */}
-              {art.isPublic && (
-                <Button
-                  onClick={handleCopyPublicLink}
-                  variant="outline"
-                  className="border-green-500/50 text-green-400 hover:bg-green-900/20 hover:border-green-400 font-mono"
-                  size="sm"
-                >
-                  <Share2 size={16} className="mr-2" />
-                  Share Link
-                </Button>
-              )}
             </motion.div>
           </div>
         </CardHeader>
       </Card>
 
       <Card className="bg-zinc-900/80 backdrop-blur-sm border-green-500/50 shadow-2xl shadow-green-500/10">
-        <CardContent className="p-6">
+        <CardContent>
           <motion.div
             className="overflow-x-auto overflow-y-auto"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -248,6 +171,20 @@ export default function AsciiArtPage() {
           </motion.div>
         </CardContent>
       </Card>
+
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+      >
+        <p className="text-green-500/60 text-sm">
+          Want to create your own ASCII art?
+          <a href="/sign-up" className="text-green-400 hover:text-green-300 ml-1 underline">
+            Sign up here!
+          </a>
+        </p>
+      </motion.div>
     </motion.div>
   );
 }

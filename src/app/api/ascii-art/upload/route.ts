@@ -65,6 +65,7 @@ export const POST = async (req: NextRequest) => {
     const chars = (form.get("chars") as string) || "@%#*+=-:. ";
     const isPreview = form.get("preview") === "true";
     const maintainOriginalSize = form.get("maintainOriginalSize") !== "false"; // default to true
+    const sizeMultiplier = form.get("sizeMultiplier") ? parseFloat(form.get("sizeMultiplier") as string) : 1.0;
 
     if (!file || !imageName) {
         return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -82,7 +83,7 @@ export const POST = async (req: NextRequest) => {
 
     // 5. Process image
     const buffer = Buffer.from(await file.arrayBuffer());
-    const asciiText = await uploadImageAndConvertToAscii(buffer, width, chars, height, maintainOriginalSize);
+    const asciiText = await uploadImageAndConvertToAscii(buffer, width, chars, height, maintainOriginalSize, sizeMultiplier);
 
     // 6. If this is just a preview, return the ASCII without saving
     if (isPreview) {

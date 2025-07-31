@@ -30,6 +30,7 @@ export async function GET(
             id: art.id,
             imageName: art.imageName,
             asciiText: art.asciiText,
+            isPublic: art.isPublic,
             createdAt: art.createdAt,
         });
     } catch (error) {

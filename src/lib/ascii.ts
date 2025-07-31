@@ -6,29 +6,39 @@ export async function uploadImageAndConvertToAscii(
     width?: number,
     chars: string = "@%#*+=-:. ",
     height?: number,
-    maintainOriginalSize: boolean = true
+    maintainOriginalSize: boolean = true,
+    sizeMultiplier: number = 1.0
 ): Promise<string> {
     // Get original image metadata first
     const metadata = await sharp(buffer).metadata();
     const originalWidth = metadata.width || 100;
     const originalHeight = metadata.height || 100;
 
-    // If maintainOriginalSize is true and no custom dimensions provided, use original dimensions
-    // But scale them down proportionally to keep reasonable ASCII size (max 150 chars wide)
+    // Character aspect ratio compensation - typical monospace chars are ~1.8-2x taller than wide
+    const characterAspectRatio = 0.55; // This gives better results than 0.5
+
     let targetWidth = width;
     let targetHeight = height;
 
     if (maintainOriginalSize && !width && !height) {
-        const maxWidth = 150; // Maximum ASCII width for readability
-        const aspectRatio = originalHeight / originalWidth;
+        // Calculate base dimensions maintaining aspect ratio
+        const baseMaxWidth = 120; // Base size before multiplier
+        const scaledMaxWidth = Math.round(baseMaxWidth * sizeMultiplier);
+        const imageAspectRatio = originalHeight / originalWidth;
 
-        if (originalWidth > maxWidth) {
-            targetWidth = maxWidth;
-            targetHeight = Math.round(maxWidth * aspectRatio * 0.5); // 0.5 to account for character aspect ratio
+        if (originalWidth > scaledMaxWidth) {
+            targetWidth = scaledMaxWidth;
+            // Apply character aspect ratio compensation to height
+            targetHeight = Math.round(scaledMaxWidth * imageAspectRatio * characterAspectRatio);
         } else {
-            targetWidth = originalWidth;
-            targetHeight = Math.round(originalHeight * 0.5); // 0.5 to account for character aspect ratio
+            // For smaller images, scale them up or down based on sizeMultiplier
+            targetWidth = Math.round(originalWidth * sizeMultiplier);
+            targetHeight = Math.round(originalHeight * sizeMultiplier * characterAspectRatio);
         }
+
+        // Ensure minimum and maximum bounds
+        targetWidth = Math.max(20, Math.min(300, targetWidth));
+        targetHeight = Math.max(10, Math.min(200, targetHeight));
     } else if (!targetWidth) {
         targetWidth = 100; // fallback default
     }

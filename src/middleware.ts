@@ -6,6 +6,8 @@ const isPublicRoute = createRouteMatcher([
     '/api/webhook/register',
     '/sign-up(.*)',
     '/sign-in(.*)',
+    '/public/(.*)',
+    '/api/public/(.*)'
 ]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
@@ -35,8 +37,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
             return NextResponse.redirect(new URL("/dashboard", req.url));
         }
 
-        // Prevent logged-in users from visiting public pages like /sign-in
-        if (isPublicRoute(req)) {
+        // Prevent logged-in users from visiting auth pages, but allow public ASCII art viewing
+        if (isPublicRoute(req) && !req.nextUrl.pathname.startsWith('/public') && !req.nextUrl.pathname.startsWith('/api/public')) {
             return NextResponse.redirect(
                 new URL(role === "admin" ? "/admin/dashboard" : "/dashboard", req.url)
             );
@@ -51,5 +53,5 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 });
 
 export const config = {
-    matcher: ["/((?!_next|_static|favicon.ico).*)"], 
+    matcher: ["/((?!_next|_static|favicon.ico).*)"],
 };
