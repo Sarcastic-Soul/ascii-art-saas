@@ -77,32 +77,6 @@ export default function Home() {
           Turn your images into quirky ASCII art — retro magic in one click.
         </p>
       </div>
-
-      {/* Preview */}
-      <div className="grid sm:grid-cols-2 gap-6 max-w-2xl w-full">
-        <div className="bg-zinc-800 p-2 rounded">
-          <Image
-            src="/demo/sample-image.jpg"
-            width={200}
-            height={200}
-            alt="Original"
-            className="rounded mx-auto"
-          />
-        </div>
-        <pre className="text-[10px] sm:text-xs bg-zinc-800 p-2 rounded overflow-x-auto max-h-52 whitespace-pre text-green-400">
-          {`       .-"      "-.
-      /            \\
-     |              |
-     |,  .-.  .-.  ,|
-     | )(_o/  \\o_)( |
-     |/     /\\     \\|
-     (_     ^^     _)
-      \\__|IIIIII|__/
-       | \\IIIIII/ |
-       \\          /
-        \`.______.'`}
-        </pre>
-      </div>
     </main>
   );
 }
