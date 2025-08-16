@@ -2,6 +2,8 @@
 
 Convert images to stunning ASCII art in seconds. Upload an image and get a text-based ASCII representation that you can copy, share, or download. Built with **Next.js 15**, **TailwindCSS**, **Sharp**, and more.
 
+![preview](./public/ascii-art.png)
+
 ## ✨ Features
 
 - 📤 Upload any image (JPG/PNG)
